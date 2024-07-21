@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+  Id Int @id @default(autoincrement())
+  username String
+  name String
+  password String
+  CreatedAt DateTime @default(now())
+
+  messages Message[]
+  chatRooms UserChatRoom[]
+
+  @@map("users")
+}
+
+model Message{
+  id Int @id @default(autoincrement())
+  content String
+  createdAt DateTime @default(now())
+
+  sender User @relation(fields:[senderId], references: [Id])
+  senderId Int
+  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id])
+  chatRoomId Int
+
+  @@map("messages")
+}
+
+model PersonalAccessToken{
+  id Int @id @default(autoincrement())
+  type String
+  token String @unique
+  status String
+  CreatedAt DateTime @default(now())
+
+  @@map("personal_access_token")
+}
+
+model UserChatRoom{
+  id Int @id @default(autoincrement())
+  userId Int
+  chatRoomId Int
+
+  user User @relation(fields:[userId], references: [Id])
+  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id])
+
+  @@map("user_chat_rooms")
+}
+
+model ChatRoom{
+  id Int @id @default(autoincrement())
+  name String
+  isActive Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  users UserChatRoom[]
+  messages Message[]
+
+  @@map("chat_rooms")
+}
